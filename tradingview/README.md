@@ -10,7 +10,7 @@ This is a baseline to test, not a validated or profitable strategy. OANDA is dis
 4. Inspect the strategy report. Initial capital: USD 1000, risk: 1%, max one position, no pyramiding. The script rejects other pairs, timeframes and synthetic charts.
 5. Keep strategy properties consistent: USD account, 0.00005 USD per unit per side commission proxy, one tick slippage, 2% margin, standard fill timing. Changing the properties can invalidate sizing assumptions.
 
-Pine compilation and historical performance must be checked in TradingView; there is no local Pine compiler in this repository. No backtest metrics have been obtained yet. Available history and export/alert features depend on the account plan and feed.
+The baseline compiled and ran in TradingView on 2026-10-11 UTC. The first observed historical report was negative; see [validation.md](validation.md) for the exact sample and metrics. There is no local Pine compiler in this repository. Available history and export/alert features depend on the account plan and feed.
 
 ## Exact baseline
 
