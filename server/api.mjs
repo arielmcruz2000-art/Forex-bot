@@ -1,11 +1,15 @@
 import {command,snapshot} from './paper.mjs';
 import {read,update,stateStore} from './storage.mjs';
+import {practiceSnapshot} from './oanda-practice.mjs';
 const json=(data,status=200)=>Response.json(data,{status,headers:{'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'}});
 export async function handler(req,context,storeFactory=stateStore,now=Date.now()) {
   // Verified by Netlify private-project login. Never trust client identity headers.
   if(!context.user?.id)return json({error:'Inicia sesión en el proyecto privado de Netlify.'},401);
   if(context.deploy?.context!=='production'||context.deploy?.published!==true)return json({error:'Usa el panel de producción publicado.'},403);
   const path=new URL(req.url).pathname;
+  if(req.method==='GET'&&path==='/api/oanda-practice') {
+    const result=await practiceSnapshot();return json(result.data??{error:result.error},result.status);
+  }
   if(req.method==='GET'&&path==='/api/state') {
     try{return json(snapshot(await read(storeFactory(),now)));}catch{return json({error:'No se pudo leer el estado persistente.'},503);}
   }
