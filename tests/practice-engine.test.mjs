@@ -113,3 +113,9 @@ test('native production scheduler runs with published=false; missing context and
  for(const context of [{},{deploy:{context:'deploy-preview',published:false}},{deploy:{context:'branch-deploy',published:true}}])assert.equal((await run(null,context)).status,204);
  assert.equal(calls,0);assert.equal((await run(null,{deploy:{context:'production',published:false}})).status,204);assert.equal(calls,1);
 });
+test('changing account credentials cannot reuse another account research ledger',async()=>{
+ const {store,broker}=await active();broker.a.id='101-001-22222222-001';const r=await practiceTick(store,broker,NOW);assert.equal(r.fault,'account-binding-changed');assert.equal(r.active,false);assert.equal(broker.calls.includes('submit'),false);assert.equal(JSON.stringify(r).includes('22222222'),false);
+});
+test('unsupported instrument metadata prevents activation before the first market session',async()=>{
+ const store=new Store(),broker=new Broker();broker.instrument=async()=>({...instrument(),tradeUnitsPrecision:2});const r=await practiceTick(store,broker,NOW);assert.equal(r.last_decision.reason,'unsupported-instrument');await assert.rejects(practiceControl(store,cmd('start'),NOW));
+});

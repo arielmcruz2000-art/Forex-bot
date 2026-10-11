@@ -23,7 +23,7 @@ export async function practiceControl(store,payload,now=Date.now()){
       if(payload.action==='resume'&&!s.pending&&s.trades.every(t=>t.state==='CLOSED')&&s.account?.openTrades===0&&s.account?.pendingOrders===0){
         if(s.fault==='protection-failed-close-requested')s.fault=null;s.kill=false;
       }
-      if(s.fault||s.dailyLocked||s.pending||s.kill||!s.initialized||now>=END)throw Error('practice-not-ready');s.active=true;
+      if(s.fault||s.dailyLocked||s.pending||s.kill||!s.initialized||!s.preflight||now>=END)throw Error('practice-not-ready');s.active=true;
     }else {s.active=false;if(payload.action==='kill')s.kill=true;}
     s.commands.push(payload.id);s.commands=s.commands.slice(-200);event(s,'command-'+payload.action,now);
   });
@@ -86,6 +86,10 @@ export async function practiceTick(store,broker,now=Date.now()){
   try{
     const account=await broker.account();
     let s=await save(s=>{
+      const binding=createHash('sha256').update(String(account.id)).digest('hex');
+      if(s.accountBinding&&s.accountBinding!==binding)throw Error('account-binding-changed');
+      if(!s.accountBinding&&(s.trades.length||s.pending))throw Error('account-binding-changed');
+      s.accountBinding=binding;
       s.lastTick=new Date(now).toISOString();s.account={balance:number(account.balance),equity:number(account.NAV),realizedPL:number(account.pl),unrealizedPL:number(account.unrealizedPL),openTrades:number(account.openTradeCount),pendingOrders:number(account.pendingOrderCount)};
       if(!s.initialized){
         if(number(account.openTradeCount)||number(account.openPositionCount)||number(account.pendingOrderCount))throw Error('account-must-start-flat');
@@ -93,6 +97,11 @@ export async function practiceTick(store,broker,now=Date.now()){
         s.initialized=true;s.cursor=account.lastTransactionID;s.baselineTransaction=account.lastTransactionID;event(s,'practice-baseline-ready',now);
       }
     });
+    if(!s.preflight){
+      const i=await broker.instrument();
+      if(i.displayPrecision!==5||i.tradeUnitsPrecision!==0||i.pipLocation!==-4||number(i.marginRate)<=0||number(i.minimumTradeSize)>4464||number(i.maximumOrderUnits)<1||account.guaranteedStopLossOrderMode==='REQUIRED')throw Error('unsupported-instrument');
+      s=await save(s=>{s.preflight=true;event(s,'instrument-preflight-ready',now);});
+    }
     const delta=await broker.transactions(s.cursor);
     if(!/^\d+$/.test(delta.lastTransactionID)||BigInt(delta.lastTransactionID)<BigInt(s.cursor)||delta.transactions.some((t,i)=>!/^\d+$/.test(t.id)||BigInt(t.id)<=BigInt(i?delta.transactions[i-1].id:s.cursor)||BigInt(t.id)>BigInt(delta.lastTransactionID)))throw Error('invalid-transaction-range');
     s=await save(s=>{ingest(s,delta.transactions);s.cursor=delta.lastTransactionID;});
@@ -152,9 +161,9 @@ export async function practiceTick(store,broker,now=Date.now()){
     s=await save(s=>{event(s,txs.some(t=>t.type==='ORDER_FILL')?'entry-fill-awaiting-reconciliation':'entry-not-filled-awaiting-reconciliation',now);});
     return practiceReport(s,now);
   }catch(e){
-    const codes=['entry-response-unknown','protection-failed-close-requested','existing-account-exposure','stale-price-or-wide-spread','insufficient-order-budget','unsupported-instrument','unsupported-commission','insufficient-margin','entry-disabled'];
+    const codes=['account-binding-changed','entry-response-unknown','protection-failed-close-requested','existing-account-exposure','stale-price-or-wide-spread','insufficient-order-budget','unsupported-instrument','unsupported-commission','insufficient-margin','entry-disabled'];
     const code=codes.includes(e.message)?e.message:'practice-check-failed';
-    const s=await save(s=>{s.lastDecision={status:'blocked',reason:code,time:new Date(now).toISOString()};event(s,code,now);if(s.pending||code==='protection-failed-close-requested'){s.active=false;s.fault=code;}});
+    const s=await save(s=>{s.lastDecision={status:'blocked',reason:code,time:new Date(now).toISOString()};event(s,code,now);if(s.pending||code==='protection-failed-close-requested'||code==='account-binding-changed'){s.active=false;s.fault=code;}});
     return practiceReport(s,now);
   }finally{await save(s=>{s.lease=null;});}
 }

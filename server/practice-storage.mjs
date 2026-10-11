@@ -4,7 +4,7 @@ import {getStore} from '@netlify/blobs';
 export const practiceStore=()=>getStore({name:'forex-oanda-practice-v1',consistency:'strong',fetch:async(...args)=>{
   const r=await fetch(...args);if(!r.ok&&r.status!==404&&r.status!==412)throw Error('practice-storage-unavailable');return r;
 }});
-export const initialPractice=()=>({version:1,active:false,kill:false,initialized:false,revision:null,lease:null,pending:null,trades:[],events:[],account:null,lastTick:null,lastSignalKey:null,day:null,dayStartEquity:1000,dailyLocked:false,lastEquity:1000,peakEquity:1000,maxDrawdownPct:0,baselineTransaction:null,cursor:null,fault:null,commands:[],lastDecision:null});
+export const initialPractice=()=>({version:1,active:false,kill:false,initialized:false,preflight:false,accountBinding:null,revision:null,lease:null,pending:null,trades:[],events:[],account:null,lastTick:null,lastSignalKey:null,day:null,dayStartEquity:1000,dailyLocked:false,lastEquity:1000,peakEquity:1000,maxDrawdownPct:0,baselineTransaction:null,cursor:null,fault:null,commands:[],lastDecision:null});
 export async function practiceRead(store){const r=await store.getWithMetadata('state',{type:'json',consistency:'strong'});return r?.data??initialPractice();}
 export async function practiceUpdate(store,fn){
   for(let i=0;i<8;i++){
