@@ -4,7 +4,7 @@ import {practiceBroker,BrokerError} from '../server/practice-broker.mjs';
 import {initialPractice,practiceRead,practiceUpdate} from '../server/practice-storage.mjs';
 import {practiceControl,practiceTick,practiceReport,executableOrder} from '../server/practice-engine.mjs';
 import {handler} from '../server/api.mjs';
-import scheduled from '../netlify/functions/practice-tick.mjs';
+import scheduled,{createScheduledPractice} from '../netlify/functions/practice-tick.mjs';
 const NOW=Date.parse('2026-10-12T11:15:00Z');
 class Store {
  data=null;rev=0;
@@ -107,4 +107,9 @@ test('rejected market order reconciles the claim and never replays the same sign
 });
 test('financial evidence missing commission fails closed instead of inventing zero cost',async()=>{
  const {store,broker}=await active();await practiceTick(store,broker,NOW);delete broker.tx[0].commission;const r=await practiceTick(store,broker,NOW+60000);assert.equal(r.active,false);assert.ok(r.fault);assert.equal(r.pending_status,'submitting');
+});
+test('native production scheduler runs with published=false; missing context and previews never run',async()=>{
+ let calls=0;const run=createScheduledPractice({storeFactory:()=>new Store(),brokerFactory:()=>new Broker(),tick:async()=>{calls++;}});
+ for(const context of [{},{deploy:{context:'deploy-preview',published:false}},{deploy:{context:'branch-deploy',published:true}}])assert.equal((await run(null,context)).status,204);
+ assert.equal(calls,0);assert.equal((await run(null,{deploy:{context:'production',published:false}})).status,204);assert.equal(calls,1);
 });

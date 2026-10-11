@@ -15,6 +15,8 @@ Updated October 11, 2026. The user now requests completing and starting the demo
 
 ## Runtime safeguards and limits
 
+Production inspection showed that native scheduled invocations carry `deploy.context=production` and `deploy.published=false`. The scheduler guard therefore checks the trusted production context; Netlify itself runs scheduled jobs only on the current published deploy and does not expose a URL invocation. Preview/branch contexts are rejected. Private HTTP API controls retain both the production and published checks and verified user login. This runtime distinction is tested explicitly.
+
 Netlify scheduled functions have a 30-second limit. Broker calls time out after 3 seconds; a new entry cannot begin after 18 seconds of work. A crashed process leaves a 120-second lease and its durable claim for reconciliation. Delays can skip signals; no claim of continuous real-time execution or exact TradingView fills is made. Protective orders remain at the broker after process failure. Non-guaranteed stops can exceed planned risk through gaps or slippage. The 4% rule blocks new entries rather than guaranteeing a maximum daily realized loss.
 
 The storage SDK's conditional-write error behavior is guarded by a strict fetch transport, mandatory ETags and strong revision read-back. Missing market, financial or state evidence blocks entries. No credentials or account identifier are returned by the engine or stored in this document.
