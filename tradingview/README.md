@@ -16,6 +16,8 @@ The baseline compiled and ran in TradingView on 2026-10-11 UTC. The first observ
 
 The first separate trend-filter experiment is recorded in [trend-validation.md](trend-validation.md). SMA trend lengths 80, 100 and 120 all lost money and did not improve profitability in the development window. The original baseline remains unchanged.
 
+Independent Session and ATR experiments are recorded in [session-atr-validation.md](session-atr-validation.md). Both improved headline loss in the development window but remained unprofitable; neither is deployed to the Netlify engine or validated out of sample.
+
 - Buy: SMA 5 crosses above SMA 20 at a confirmed M15 close; sell: opposite crossover. No future bars or external security() series.
 - Entry: simulated market fill on the next bar open, not the signal close.
 - Stop: 20 pips from simulated entry. Gross target: 40 pips. Costs make the net reward/risk lower than 2:1.

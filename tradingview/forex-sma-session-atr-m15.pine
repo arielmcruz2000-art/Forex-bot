@@ -1,0 +1,110 @@
+//@version=6
+// Research baseline only. No OANDA connection and no live orders.
+strategy("Forex Bot | EURUSD M15 | Session ATR Test v0.3", overlay = true,
+     initial_capital = 1000, currency = currency.USD, pyramiding = 0,
+     default_qty_type = strategy.fixed,
+     commission_type = strategy.commission.cash_per_contract,
+     commission_value = 0.00005, slippage = 1,
+     margin_long = 2, margin_short = 2,
+     calc_on_every_tick = false, calc_on_order_fills = false,
+     process_orders_on_close = false)
+
+// Run only on standard EUR/USD 15-minute candles (not Heikin Ashi/Renko).
+if syminfo.type != "forex" or syminfo.basecurrency != "EUR" or syminfo.currency != "USD" or syminfo.pointvalue != 1
+    runtime.error("Use a Forex EUR/USD feed with point value 1 and a USD test account.")
+if not timeframe.isminutes or timeframe.multiplier != 15
+    runtime.error("Use the 15-minute timeframe.")
+if not chart.is_standard
+    runtime.error("Use standard candles, not synthetic chart types.")
+
+float riskPct = input.float(1.0, "Risk per trade (%)", minval = 0.1, maxval = 2.0, step = 0.1)
+int fastLen = input.int(5, "Fast SMA", minval = 2, maxval = 50)
+int slowLen = input.int(20, "Slow SMA", minval = 3, maxval = 200)
+string filterMode = input.string("None", "Research filter", options = ["None", "Session", "ATR"])
+int atrLen = input.int(14, "ATR length", minval = 5, maxval = 50)
+float minAtrPips = input.float(3.0, "Minimum ATR (pips)", minval = 0.1, step = 0.5)
+float maxAtrPips = input.float(15.0, "Maximum ATR (pips)", minval = 0.5, step = 0.5)
+float stopPips = input.float(20.0, "Stop distance (pips)", minval = 5, maxval = 100, step = 1)
+float rewardRatio = input.float(2.0, "Gross target / stop", minval = 1, maxval = 5, step = 0.1)
+int startDate = input.time(timestamp("01 Jan 2024 00:00 +0000"), "Test start")
+int endDate = input.time(timestamp("01 Jan 2027 00:00 +0000"), "Test end")
+if fastLen >= slowLen or startDate >= endDate or minAtrPips >= maxAtrPips
+    runtime.error("Fast SMA must be shorter than slow SMA; start must precede end.")
+
+// This is a cost approximation, not an executable bid/ask model.
+// Fixed spread proxy: 0.00005 USD/unit each side (1 pip round trip).
+// Slippage: one minimum tick per market/stop fill in strategy properties.
+// Keep these values and sizing assumptions together if you edit the script.
+float pip = 0.0001
+int stopTicks = int(math.round(stopPips * pip / syminfo.mintick))
+int targetTicks = int(math.round(stopTicks * rewardRatio))
+float riskPerUnit = stopTicks * syminfo.mintick * syminfo.pointvalue + 0.0001 + 2 * syminfo.mintick * syminfo.pointvalue
+float riskBudget = math.max(strategy.equity, 0) * riskPct / 100
+// A simulated 50:1 margin model, with a 5% reserve; not a broker promise.
+float marginCap = math.max(strategy.equity, 0) * 0.95 / (close * syminfo.pointvalue * 0.02)
+float units = math.floor(math.min(riskBudget / riskPerUnit, marginCap))
+
+// Daily lock uses NY calendar days, previous close equity as the baseline.
+// Calculated on M15 closes. It blocks new entries; it is not a guaranteed loss cap.
+string ny = "America/New_York"
+int dayKey = year(time, ny) * 10000 + month(time, ny) * 100 + dayofmonth(time, ny)
+var float dayEquity = na
+var bool dayLocked = false
+if na(dayEquity) or dayKey != dayKey[1]
+    dayEquity := nz(strategy.equity[1], strategy.initial_capital)
+    dayLocked := false
+float dayLoss = dayEquity > 0 ? math.max(0, (dayEquity - strategy.equity) / dayEquity * 100) : 100
+if dayLoss >= 4
+    dayLocked := true
+    strategy.cancel("Long")
+    strategy.cancel("Short")
+
+float fast = ta.sma(close, fastLen)
+float slow = ta.sma(close, slowLen)
+bool buySignal = ta.crossover(fast, slow)
+bool sellSignal = ta.crossunder(fast, slow)
+bool inWindow = time >= startDate and time_close < endDate
+// Session gates signal CLOSES in New York, weekdays 07:00 inclusive to 12:00 exclusive.
+int signalHour = hour(time_close, ny)
+int signalWeekday = dayofweek(time_close, ny)
+bool sessionAllowed = signalHour >= 7 and signalHour < 12 and signalWeekday >= dayofweek.monday and signalWeekday <= dayofweek.friday
+float atrPips = ta.atr(atrLen) / pip
+bool atrAllowed = atrPips >= minAtrPips and atrPips <= maxAtrPips
+bool filterAllowed = filterMode == "None" or (filterMode == "Session" and sessionAllowed) or (filterMode == "ATR" and atrAllowed)
+bool canEnter = barstate.isconfirmed and inWindow and not dayLocked and strategy.position_size == 0 and units >= 1 and filterAllowed
+
+// Signal at confirmed close, simulated entry at next bar open by default.
+// Brackets use tick distances from the actual simulated fill, not signal price.
+if canEnter and buySignal
+    strategy.entry("Long", strategy.long, qty = units, alert_message = "research_entry_long")
+    strategy.exit("LongExit", from_entry = "Long", loss = stopTicks, profit = targetTicks, alert_message = "research_exit_long")
+if canEnter and sellSignal
+    strategy.entry("Short", strategy.short, qty = units, alert_message = "research_entry_short")
+    strategy.exit("ShortExit", from_entry = "Short", loss = stopTicks, profit = targetTicks, alert_message = "research_exit_short")
+
+// Existing protective exits stay active if new entries become blocked.
+// At the test end, cancel pending entries and close the remaining test position.
+if time_close >= endDate
+    strategy.cancel("Long")
+    strategy.cancel("Short")
+    strategy.close_all(comment = "Test end", alert_message = "research_test_end")
+
+plot(fast, "SMA fast", color = color.aqua)
+plot(slow, "SMA slow", color = color.orange)
+float currentStop = strategy.position_size > 0 ? strategy.position_avg_price - stopTicks * syminfo.mintick : strategy.position_size < 0 ? strategy.position_avg_price + stopTicks * syminfo.mintick : na
+float currentTarget = strategy.position_size > 0 ? strategy.position_avg_price + targetTicks * syminfo.mintick : strategy.position_size < 0 ? strategy.position_avg_price - targetTicks * syminfo.mintick : na
+plot(currentStop, "Protective stop", color = color.red, style = plot.style_linebr)
+plot(currentTarget, "Gross target", color = color.green, style = plot.style_linebr)
+bgcolor(dayLocked ? color.new(color.red, 88) : na, title = "Daily entry lock")
+var table info = table.new(position.top_right, 2, 5, border_width = 1)
+if barstate.islast
+    table.cell(info, 0, 0, "RESEARCH ONLY")
+    table.cell(info, 1, 0, "No live orders")
+    table.cell(info, 0, 1, "New trade risk")
+    table.cell(info, 1, 1, str.tostring(riskPct) + "%")
+    table.cell(info, 0, 2, "Daily loss")
+    table.cell(info, 1, 2, str.tostring(dayLoss, "#.##") + "%")
+    table.cell(info, 0, 3, "Daily entries")
+    table.cell(info, 1, 3, dayLocked ? "LOCKED" : "Allowed")
+    table.cell(info, 0, 4, "Positions")
+    table.cell(info, 1, 4, "One maximum")
