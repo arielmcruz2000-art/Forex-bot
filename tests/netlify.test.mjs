@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {initial,open,step,command,scheduled,snapshot} from '../server/paper.mjs';
+import {initial,open,step,command,scheduled,snapshot,migrate,MODEL,RULES} from '../server/paper.mjs';
 import {read,update} from '../server/storage.mjs';
 import {handler} from '../server/api.mjs';
 const now=Date.parse('2026-10-11T03:00:00Z');
@@ -11,12 +11,14 @@ class FakeStore {
   async setJSON(_key,data,opts){if(opts.onlyIfNew&&this.data||opts.onlyIfMatch&&opts.onlyIfMatch!==String(this.rev))return {modified:false};this.data=structuredClone(data);this.rev++;return {modified:true,etag:String(this.rev)};}
 }
 test('position sizing includes buffer; exposure cannot exceed 2%',()=>{
-  const s=initial(now);command(s,cmd('start'),now);assert.equal(open(s,1,now),true);assert.equal(s.trades[0].units,4878);assert.equal(open(s,-1,now),true);assert.equal(open(s,1,now),false);
+  const s=initial(now);command(s,cmd('start'),now);assert.equal(open(s,1,now),true);assert.equal(s.trades[0].units,4716);
+  // Entry costs shrink current equity: two full 1% budgets no longer fit.
+  assert.equal(open(s,-1,now),false);s.risk=.9;assert.equal(open(s,-1,now),true);assert.equal(open(s,1,now),false);
   const s2=initial(now);s2.active=true;s2.risk=1.5;assert.equal(open(s2,1,now),true);assert.equal(open(s2,-1,now),false);
 });
 test('pause blocks entries but protective short exit still runs, including spread',()=>{
   const s=initial(now);s.active=true;open(s,-1,now);command(s,cmd('pause'),now);assert.equal(open(s,1,now),false);step(s,now,1.092);
-  assert.equal(s.trades.length,1);step(s,now,1.090);assert.equal(s.trades.length,0);assert.equal(s.history[0].reason,'Objetivo');assert.ok(Math.abs(s.history[0].exit-1.09005)<1e-10);assert.ok(s.balance>1000);
+  assert.equal(s.trades.length,1);step(s,now,1.090);assert.equal(s.trades.length,0);assert.equal(s.history[0].reason,'Objetivo');assert.ok(Math.abs(s.history[0].exit-1.09006)<1e-10);assert.ok(s.balance>1000);
 });
 test('daily equity drawdown disables entries and rejects restart',()=>{
   const s=initial(now);s.balance=950;s.active=true;step(s,now,1.095);assert.equal(s.active,false);assert.throws(()=>command(s,cmd('start'),now));
@@ -45,4 +47,66 @@ test('API fails closed for public/preview deployment, client identity headers an
   const post=origin=>new Request('https://example.netlify.app/api/command',{method:'POST',headers:{origin,'Content-Type':'application/json'},body:JSON.stringify(cmd('start'))});
   assert.equal((await handler(post('https://evil.example'),context,factory,now)).status,403);assert.equal(store.data,null);
   assert.equal((await handler(post(context.site.url),context,factory,now)).status,200);assert.equal(store.data.active,true);
+});
+
+test('daily lock persists through recovery, restart and config; resets only at NY midnight',async()=>{
+  const s=initial(now);s.active=true;s.balance=960;step(s,now,1.095);
+  assert.equal(s.day_locked,true);s.balance=1000;
+  command(s,cmd('config',{risk:.5}),now);assert.throws(()=>command(s,cmd('start'),now));
+  s.active=true;assert.equal(open(s,1,now),false);step(s,now,1.095);assert.equal(s.active,false);
+  const store=new FakeStore();await update(store,state=>{Object.assign(state,structuredClone(s));return true;},now);
+  const reloaded=await read(store,now);
+  assert.throws(()=>command(reloaded,cmd('start'),now));
+  // now = Oct 10 23:00 NY (DST). UTC midnight does not reset NY day.
+  command(s,cmd('start'),Date.parse('2026-10-11T04:00:00Z'));
+  assert.equal(s.day_locked,false);assert.equal(s.day_equity,1000);
+});
+test('dollar exposure and margin stay within post-entry equity limits across risks and balances',()=>{
+  for(const balance of [1,100,1000,10000])for(const risk of [.1,.5,1,1.5,2])for(const direction of [1,-1]) {
+    const s=initial(now);s.active=true;s.balance=balance;s.day_equity=balance;s.risk=risk;
+    if(open(s,direction,now)) {
+      const v=snapshot(s),t=s.trades[0];
+      assert.ok(t.risk_cash<=balance*risk/100+1e-9);
+      assert.ok(v.open_risk_percent<=2+1e-9);
+      assert.ok(t.units*t.entry*.02<=v.equity*.95+.01);
+      assert.equal(t.model,MODEL);assert.equal(t.data_source,'artificial');
+    }
+  }
+  const s=initial(now);s.active=true;s.risk=2;s.price=100;
+  assert.ok(open(s,1,now));assert.ok(s.trades[0].units<500);
+});
+test('equity decline and changed settings cannot discount the risk of existing positions',()=>{
+  const s=initial(now);s.active=true;s.risk=1.5;open(s,1,now);
+  const reserved=s.trades[0].risk_cash;s.balance=980;s.risk=.5;
+  assert.equal(open(s,-1,now),false);assert.equal(s.trades[0].risk_cash,reserved);
+  for(const risk of [NaN,Infinity,-1,0,3]) {s.risk=risk;assert.equal(open(s,1,now),false);}
+});
+test('stop fills for both directions include slippage; gaps can exceed planned risk',()=>{
+  for(const direction of [1,-1]) {
+    const s=initial(now);s.active=true;open(s,direction,now);command(s,cmd('pause'),now);
+    const t=s.trades[0];step(s,now,t.stop+direction*RULES.halfSpread);
+    assert.equal(s.history[0].reason,'Stop');
+    assert.ok(Math.abs(s.history[0].profit)<=t.risk_cash+.01);
+    const gap=initial(now);gap.active=true;open(gap,direction,now);const risk=gap.trades[0].risk_cash;
+    step(gap,now,gap.price-direction*.02);assert.ok(-gap.history[0].profit>risk);assert.equal(gap.day_locked,true);
+  }
+});
+test('legacy data preserves profits and fills; generated ledgers never claim historical or broker execution',()=>{
+  const s=initial(now);s.version=1;delete s.day_locked;
+  s.history=[{entry:1.09505,stop:1.09305,units:4878,profit:12.34,exit:1.098,time:'old'}];
+  migrate(s);assert.equal(s.history[0].profit,12.34);assert.equal(s.history[0].exit,1.098);
+  assert.equal(s.history[0].model,'generated-spread-v1');
+  const v=snapshot(s);assert.equal(v.data_source,'artificial');assert.equal(v.historical_backtest,false);
+  assert.equal(v.execution_enabled,false);assert.equal(v.broker_connected,false);
+});
+
+ test('UTC midnight and daylight saving offsets do not reset the NY lock early',()=>{
+  for(const [before,early,midnight] of [
+    ['2026-10-11T00:00:00Z','2026-10-11T03:59:00Z','2026-10-11T04:00:00Z'],
+    ['2026-12-11T00:00:00Z','2026-12-11T04:59:00Z','2026-12-11T05:00:00Z']
+  ]) {
+    const s=initial(Date.parse(before));s.balance=950;step(s,Date.parse(before),1.095);s.balance=1000;
+    assert.throws(()=>command(s,cmd('start'),Date.parse(early)));
+    command(s,cmd('start'),Date.parse(midnight));assert.equal(s.day_locked,false);
+  }
 });

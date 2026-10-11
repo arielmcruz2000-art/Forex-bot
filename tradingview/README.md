@@ -49,3 +49,7 @@ Do not set our existing private /api/command URL as a webhook: it requires verif
 - https://www.tradingview.com/pine-script-docs/faq/strategies/
 - https://www.tradingview.com/pine-script-docs/concepts/alerts/
 - https://www.tradingview.com/support/solutions/43000529348-how-to-configure-webhook-alerts/
+
+## Revisión del motor Netlify
+
+La [comparación detallada de riesgo](risk-comparison.md) documenta controles corregidos en Netlify y diferencias deliberadas. Pine permanece sin cambios para preservar los experimentos registrados. Node/Python verifican software, no compilación Pine ni rendimiento histórico.

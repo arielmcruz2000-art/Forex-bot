@@ -10,8 +10,8 @@ OANDA desconectado. Todos los precios son generados; los resultados no miden ren
 - Netlify Functions recibe controles y una función programada avanza un tick sintético cada minuto. Solo se ejecuta en producción publicada. La frecuencia depende del servicio y sus cuotas; no es ejecución continua de mercado.
 - Netlify Blobs conserva configuración, posiciones, historial y eventos entre visitas y despliegues. Escrituras condicionales con ETag evitan perder cambios concurrentes. Los comandos se deduplican por ID (últimos 200); un tick programado como máximo por minuto. No se reproduce un backlog tras interrupciones.
 - El motor comienza pausado. Activarlo persiste hasta pausar/cerrar; cerrar el navegador no lo pausa. Pausar entradas mantiene salidas por stop/objetivo; cerrar posiciones pausa entradas y registra los cierres ficticios.
-- Cruce SMA 5/20 sobre ticks sintéticos, stop 0.002, objetivo 0.004, spread fijo ilustrativo de 1 pip. Sin liquidez real, financiación ni comisiones. No son velas M15.
-- Cuenta ficticia USD y EUR/USD. Riesgo de nuevos trades 0.1–2%, exposición nominal abierta hasta 2%, máximo dos posiciones, bloqueo de entradas por pérdida diaria del equity del 4%, día America/New_York. Los gaps pueden superar el riesgo nominal; estos límites son hipótesis educativas.
+- Cruce SMA 5/20 sobre ticks sintéticos, stop 0.002, objetivo 0.004, spread fijo ilustrativo de 1 pip. Modelo v2: un tick ilustrativo de slippage por fill y buffer de sizing 0.00212; margen 50:1 con reserva 5%. Sin liquidez real ni financiación. No son velas M15.
+- Cuenta ficticia USD y EUR/USD. Riesgo de nuevos trades 0.1–2%, reserva de riesgo en USD hasta 2% del equity actual al admitir nuevas entradas, máximo dos posiciones, bloqueo persistente de entradas por pérdida diaria del equity del 4%, día America/New_York. Los gaps pueden superar el riesgo nominal; estos límites son hipótesis educativas.
 - Historial de últimos 1000 cierres exportable CSV. Eventos limitados a 40. No borrar desde el panel.
 
 ## Seguridad y despliegue
@@ -32,3 +32,7 @@ Las pruebas cubren límites, spread/salidas con pausa, pérdida diaria, ticks y 
 ## Próximas etapas
 
 Validar una estrategia definida con históricos reales, costos, períodos fuera de muestra y robustez. Después conectar OANDA practice y desarrollar ejecución, conciliación y recuperación. El motor actual no puede enviar órdenes a un bróker ni habilita dinero real. La arquitectura para ejecución real continua se decidirá durante esa etapa.
+
+## Comparación con TradingView
+
+Ver [reglas, correcciones y protocolo de validación](tradingview/risk-comparison.md). El baseline Pine y sus resultados históricos se conservan. Ledger/CSV artificial incluye fuente y modelo por operación; resultados v1 no se recalculan ni se atribuyen a v2. El backend Python heredado no es el motor Netlify.
