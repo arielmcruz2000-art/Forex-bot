@@ -18,6 +18,8 @@ The first separate trend-filter experiment is recorded in [trend-validation.md](
 
 Independent Session and ATR experiments are recorded in [session-atr-validation.md](session-atr-validation.md). Both improved headline loss in the development window but remained unprofitable; neither is deployed to the Netlify engine or validated out of sample.
 
+The full [Session trade audit](session-audit.md) reconciles all 47 closed trades and identifies the long/short imbalance, holding durations and a gap beyond the nominal stop. A short-only diagnostic is a proposed next test, not a validated strategy.
+
 - Buy: SMA 5 crosses above SMA 20 at a confirmed M15 close; sell: opposite crossover. No future bars or external security() series.
 - Entry: simulated market fill on the next bar open, not the signal close.
 - Stop: 20 pips from simulated entry. Gross target: 40 pips. Costs make the net reward/risk lower than 2:1.
