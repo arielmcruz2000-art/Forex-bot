@@ -1,0 +1,38 @@
+{
+  "status": "frozen-not-independently-validated",
+  "frozen_at_utc": "2026-10-11T12:30:00Z",
+  "repository_commit": "d523ab9a0fd2dd2ffd49940dd30b146ed59d100c",
+  "source_path": "tradingview/forex-sma-short-target60-cost-m15.pine",
+  "source_sha256": "daffb60bc2e79d6adbc5159654a321aaee8a0f558017008f2885b65b050d6e3e",
+  "feed": "OANDA:EURUSD",
+  "chart_type": "standard",
+  "timeframe_minutes": 15,
+  "initial_capital_usd": 1000,
+  "risk_percent": 1,
+  "maximum_positions": 1,
+  "fast_sma": 5,
+  "slow_sma": 20,
+  "direction": "short-only",
+  "signal_close_session": "Weekdays 07:00 inclusive to 12:00 exclusive America/New_York",
+  "stop_pips": 20,
+  "target_pips": 60,
+  "commission_usd_per_unit_per_side": 0.0001,
+  "slippage_ticks": 2,
+  "margin_percent": 2,
+  "development_period_observed": [
+    "2026-06-30",
+    "2026-10-09"
+  ],
+  "independent_history_requested": [
+    "2026-03-02",
+    "2026-06-26"
+  ],
+  "independent_history_status": "blocked-plan-basic-5000-bars-and-deep-backtesting-paywall",
+  "forward_observation_proposed": [
+    "2026-10-12",
+    "2026-12-11"
+  ],
+  "forward_observation_status": "planned-not-started-no-alerts-or-webhooks",
+  "broker_connected": false,
+  "execution_enabled": false
+}

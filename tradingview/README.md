@@ -53,3 +53,7 @@ Do not set our existing private /api/command URL as a webhook: it requires verif
 ## Revisión del motor Netlify
 
 La [comparación detallada de riesgo](risk-comparison.md) documenta controles corregidos en Netlify y diferencias deliberadas. Pine permanece sin cambios para preservar los experimentos registrados. Node/Python verifican software, no compilación Pine ni rendimiento histórico.
+
+## Independent validation status
+
+The [2026-10-11 independent-history attempt](independent-validation-status.md) was blocked by Basic history and Deep Backtesting limits. The [frozen candidate manifest](independent-validation-plan.json) records exact settings. No independent-period result or active forward recording service exists yet.
