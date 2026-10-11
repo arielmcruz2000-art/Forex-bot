@@ -1,0 +1,38 @@
+{
+  "rounded_pnl": 101.05,
+  "unit_calendar_days": 229188.54166666666,
+  "cost_per_one_pip_per_calendar_day": 22.918854166666666,
+  "break_even_pips_per_calendar_day": 4.4085973611609806,
+  "hypothetical_scenarios": [
+    {
+      "pips_per_calendar_day": 0.1,
+      "deduction": 2.29,
+      "adjusted_pnl": 98.75
+    },
+    {
+      "pips_per_calendar_day": 0.5,
+      "deduction": 11.46,
+      "adjusted_pnl": 89.58
+    },
+    {
+      "pips_per_calendar_day": 1,
+      "deduction": 22.92,
+      "adjusted_pnl": 78.12
+    },
+    {
+      "pips_per_calendar_day": 2,
+      "deduction": 45.84,
+      "adjusted_pnl": 55.2
+    },
+    {
+      "pips_per_calendar_day": 3,
+      "deduction": 68.76,
+      "adjusted_pnl": 32.28
+    },
+    {
+      "pips_per_calendar_day": 4,
+      "deduction": 91.68,
+      "adjusted_pnl": 9.36
+    }
+  ]
+}
