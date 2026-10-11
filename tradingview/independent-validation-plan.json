@@ -32,7 +32,15 @@
     "2026-10-12",
     "2026-12-11"
   ],
-  "forward_observation_status": "planned-not-started-no-alerts-or-webhooks",
+  "forward_observation_status": "chart-configured-daily-observation-enabled-awaiting-first-session",
   "broker_connected": false,
-  "execution_enabled": false
+  "execution_enabled": false,
+  "forward_observation_window_utc": [
+    "2026-10-12T00:00:00Z",
+    "2026-12-12T00:00:00Z"
+  ],
+  "chart_url": "https://www.tradingview.com/chart/HPTKHNy5/",
+  "daily_observation_automation_id": "6acb9c4c81cc8191b6c56f4fb30e60fe",
+  "technical_alert_status": "blocked-basic-zero-technical-alerts",
+  "continuous_realtime_capture": false
 }

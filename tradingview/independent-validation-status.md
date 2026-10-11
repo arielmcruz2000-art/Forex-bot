@@ -23,3 +23,7 @@ Evaluate closed and open P/L separately, trade ledger, costs, daily locks, drawd
 A free future-data alternative is predeclared observation from October 12 through December 11, 2026, using the same candidate. This is a PROPOSED window, not an active service: no alert, webhook, scheduled capture, automatic TradingView Paper Trading order or broker execution was created. Historical strategy recalculation on later bars can be inspected manually; reliably recording realtime signals requires a separate setup and ledger. Extend observation if the sample remains too small; do not optimize on these data and continue calling them untouched.
 
 No real-money integration may be inferred from this freeze or blocked test. The generated-paper ledger remains separate and supplies no independent market evidence.
+
+## Later setup on October 11
+
+The [forward observation setup](forward-observation-status.md) supersedes the proposed-only forward status above: the chart has been configured and weekday observation scheduled. Native realtime alerts remain blocked; independent results still do not exist.

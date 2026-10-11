@@ -56,4 +56,4 @@ La [comparación detallada de riesgo](risk-comparison.md) documenta controles co
 
 ## Independent validation status
 
-The [2026-10-11 independent-history attempt](independent-validation-status.md) was blocked by Basic history and Deep Backtesting limits. The [frozen candidate manifest](independent-validation-plan.json) records exact settings. No independent-period result or active forward recording service exists yet.
+The [2026-10-11 independent-history attempt](independent-validation-status.md) was blocked by Basic history and Deep Backtesting limits. The [frozen candidate manifest](independent-validation-plan.json) records exact settings. No independent-period result exists yet. The [forward study status](forward-observation-status.md) records the saved future window and enabled weekday observation task; continuous realtime alerts remain blocked by Basic.
