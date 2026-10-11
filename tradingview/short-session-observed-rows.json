@@ -1,0 +1,126 @@
+[
+  {
+    "id": 1,
+    "text": "1ShortExitEntryJul 2, 2026, 12:30Jul 2, 2026, 12:001.14237USD1.14036USD4.72\u202fK5.38\u202fKUSD\u22129.95USD\u22120.19%"
+  },
+  {
+    "id": 2,
+    "text": "2ShortExitEntryJul 7, 2026, 21:15Jul 3, 2026, 12:451.14074USD1.14474USD4.67\u202fK5.35\u202fKUSD+18.21USD+0.34%"
+  },
+  {
+    "id": 3,
+    "text": "3ShortExitEntryJul 8, 2026, 17:00Jul 8, 2026, 15:301.14205USD1.14004USD4.75\u202fK5.42\u202fKUSD\u221210.03USD\u22120.19%"
+  },
+  {
+    "id": 4,
+    "text": "4ShortExitEntryJul 13, 2026, 19:00Jul 13, 2026, 12:151.13823USD1.14223USD4.71\u202fK5.38\u202fKUSD+18.36USD+0.34%"
+  },
+  {
+    "id": 5,
+    "text": "5ShortExitEntryJul 14, 2026, 12:15Jul 14, 2026, 11:151.14142USD1.13941USD4.79\u202fK5.46\u202fKUSD\u221210.12USD\u22120.19%"
+  },
+  {
+    "id": 6,
+    "text": "6ShortExitEntryJul 23, 2026, 12:30Jul 21, 2026, 11:301.13805USD1.14205USD4.75\u202fK5.42\u202fKUSD+18.51USD+0.34%"
+  },
+  {
+    "id": 7,
+    "text": "7ShortExitEntryJul 27, 2026, 00:00Jul 24, 2026, 11:001.14030USD1.13829USD4.83\u202fK5.5\u202fKUSD\u221210.20USD\u22120.19%"
+  },
+  {
+    "id": 8,
+    "text": "8ShortExitEntryJul 29, 2026, 18:00Jul 29, 2026, 15:451.14013USD1.13812USD4.79\u202fK5.45\u202fKUSD\u221210.10USD\u22120.19%"
+  },
+  {
+    "id": 9,
+    "text": "9ShortExitEntryAug 5, 2026, 00:15Aug 3, 2026, 14:301.15352USD1.15151USD4.74\u202fK5.46\u202fKUSD\u221210.00USD\u22120.18%"
+  },
+  {
+    "id": 10,
+    "text": "10ShortExitEntryAug 7, 2026, 12:30Aug 6, 2026, 12:451.15618USD1.15417USD4.69\u202fK5.41\u202fKUSD\u22129.90USD\u22120.18%"
+  },
+  {
+    "id": 11,
+    "text": "11ShortExitEntryAug 14, 2026, 11:15Aug 12, 2026, 15:301.15596USD1.15395USD4.64\u202fK5.36\u202fKUSD\u22129.80USD\u22120.18%"
+  },
+  {
+    "id": 12,
+    "text": "12ShortExitEntryAug 19, 2026, 10:00Aug 17, 2026, 14:451.16086USD1.15885USD4.6\u202fK5.33\u202fKUSD\u22129.70USD\u22120.18%"
+  },
+  {
+    "id": 13,
+    "text": "13ShortExitEntryAug 21, 2026, 09:00Aug 20, 2026, 11:451.17078USD1.16877USD4.55\u202fK5.32\u202fKUSD\u22129.61USD\u22120.18%"
+  },
+  {
+    "id": 14,
+    "text": "14ShortExitEntryAug 25, 2026, 05:45Aug 21, 2026, 12:301.16545USD1.16945USD4.51\u202fK5.27\u202fKUSD+17.58USD+0.33%"
+  },
+  {
+    "id": 15,
+    "text": "15ShortExitEntryAug 28, 2026, 14:00Aug 25, 2026, 11:301.16219USD1.16619USD4.59\u202fK5.35\u202fKUSD+17.90USD+0.33%"
+  },
+  {
+    "id": 16,
+    "text": "16ShortExitEntryAug 31, 2026, 14:45Aug 31, 2026, 12:301.16168USD1.15967USD4.67\u202fK5.42\u202fKUSD\u22129.86USD\u22120.18%"
+  },
+  {
+    "id": 17,
+    "text": "17ShortExitEntrySep 4, 2026, 13:45Sep 4, 2026, 12:451.16192USD1.15991USD4.63\u202fK5.37\u202fKUSD\u22129.77USD\u22120.18%"
+  },
+  {
+    "id": 18,
+    "text": "18ShortExitEntrySep 9, 2026, 06:15Sep 7, 2026, 12:151.16420USD1.16219USD4.58\u202fK5.33\u202fKUSD\u22129.67USD\u22120.18%"
+  },
+  {
+    "id": 19,
+    "text": "19ShortExitEntrySep 11, 2026, 12:30Sep 9, 2026, 15:301.15852USD1.16252USD4.54\u202fK5.27\u202fKUSD+17.69USD+0.34%"
+  },
+  {
+    "id": 20,
+    "text": "20ShortExitEntrySep 14, 2026, 16:00Sep 14, 2026, 13:001.15524USD1.15323USD4.62\u202fK5.33\u202fKUSD\u22129.75USD\u22120.18%"
+  },
+  {
+    "id": 21,
+    "text": "21ShortExitEntrySep 16, 2026, 18:15Sep 15, 2026, 15:451.15003USD1.15403USD4.57\u202fK5.28\u202fKUSD+17.84USD+0.34%"
+  },
+  {
+    "id": 22,
+    "text": "22ShortExitEntrySep 17, 2026, 12:15Sep 17, 2026, 11:451.14909USD1.14708USD4.66\u202fK5.34\u202fKUSD\u22129.83USD\u22120.18%"
+  },
+  {
+    "id": 23,
+    "text": "23ShortExitEntrySep 22, 2026, 08:15Sep 17, 2026, 15:451.14379USD1.14779USD4.61\u202fK5.29\u202fKUSD+17.99USD+0.34%"
+  },
+  {
+    "id": 24,
+    "text": "24ShortExitEntrySep 23, 2026, 08:00Sep 22, 2026, 13:301.14125USD1.14525USD4.7\u202fK5.38\u202fKUSD+18.32USD+0.34%"
+  },
+  {
+    "id": 25,
+    "text": "25ShortExitEntrySep 24, 2026, 16:15Sep 24, 2026, 15:301.13878USD1.13677USD4.78\u202fK5.44\u202fKUSD\u221210.09USD\u22120.19%"
+  },
+  {
+    "id": 26,
+    "text": "26ShortExitEntrySep 28, 2026, 13:30Sep 25, 2026, 14:451.13580USD1.13980USD4.74\u202fK5.4\u202fKUSD+18.47USD+0.34%"
+  },
+  {
+    "id": 27,
+    "text": "27ShortExitEntrySep 30, 2026, 08:45Sep 29, 2026, 14:001.13601USD1.13400USD4.82\u202fK5.47\u202fKUSD\u221210.18USD\u22120.19%"
+  },
+  {
+    "id": 28,
+    "text": "28ShortExitEntryOct 1, 2026, 06:30Sep 30, 2026, 14:301.13147USD1.13547USD4.78\u202fK5.42\u202fKUSD+18.62USD+0.34%"
+  },
+  {
+    "id": 29,
+    "text": "29ShortExitEntryOct 1, 2026, 15:30Oct 1, 2026, 13:151.12449USD1.12849USD4.86\u202fK5.49\u202fKUSD+18.96USD+0.35%"
+  },
+  {
+    "id": 30,
+    "text": "30ShortExitEntryOct 6, 2026, 01:00Oct 5, 2026, 11:451.12262USD1.12061USD4.95\u202fK5.55\u202fKUSD\u221210.45USD\u22120.19%"
+  },
+  {
+    "id": 31,
+    "text": "31ShortExitEntryOct 7, 2026, 07:30Oct 6, 2026, 14:301.12104USD1.12504USD4.9\u202fK5.52\u202fKUSD+19.12USD+0.35%"
+  }
+]
