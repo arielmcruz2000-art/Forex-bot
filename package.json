@@ -1,0 +1,14 @@
+{
+  "name": "forex-paper-panel",
+  "version": "0.3.0",
+  "description": "Private Netlify dashboard for generated-price paper simulation",
+  "scripts": {
+    "test": "node --test tests/netlify.test.mjs",
+    "check": "node --check dist/app.js && node --check dist/remote.js"
+  },
+  "type": "commonjs",
+  "dependencies": {
+    "@netlify/blobs": "11.1.4"
+  },
+  "private": true
+}

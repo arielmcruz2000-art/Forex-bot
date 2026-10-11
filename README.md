@@ -1,45 +1,34 @@
-# Forex Bot v0.2 — motor simulado y panel
+# Forex Bot v0.3 — panel privado y simulación en Netlify
 
-No publicado. OANDA desconectado. Todos los precios del motor son generados matemáticamente y sus resultados NO miden rentabilidad de mercado. La conexión a OANDA se deja para la última etapa.
+Panel: https://harmonious-mandazi-c4c910.netlify.app/ (acceso privado Netlify).
+Repositorio: https://github.com/arielmcruz2000-art/Forex-bot.
+OANDA desconectado. Todos los precios son generados; los resultados no miden rentabilidad real.
 
-## Incluido
+## Funcionamiento
 
-- Panel responsive con pausa, configuración, posiciones, cierre manual e historial CSV.
-- Motor Python con cruces SMA 5/20 sobre ticks sintéticos, stop de 0.002 y objetivo de 0.004. Señal educativa sin validar; no usa velas M15.
-- Ejecución simulada con spread fijo ilustrativo de 1 pip. No modela liquidez, comisiones, financiación ni todos los costos reales.
-- Riesgo abierto máximo 2%, máximo dos posiciones y bloqueo de entradas con caída diaria del equity de 4%. Son hipótesis iniciales.
-- SQLite conserva configuración, posiciones, historial y eventos. Reiniciar el servidor pausa nuevas entradas.
-- API de control autenticada. El panel necesita una clave propia, distinta del token del bróker. La clave permanece en memoria hasta recargar o desconectar.
-- Dockerfile, workflow de pruebas para GitHub y configuración Netlify.
-- Adaptador OANDA practice de solo consulta, pendiente de probar y sin utilizar por el motor.
+- El panel conecta automáticamente al motor con la sesión del proyecto privado. No requiere introducir tokens.
+- Netlify Functions recibe controles y una función programada avanza un tick sintético cada minuto. Solo se ejecuta en producción publicada. La frecuencia depende del servicio y sus cuotas; no es ejecución continua de mercado.
+- Netlify Blobs conserva configuración, posiciones, historial y eventos entre visitas y despliegues. Escrituras condicionales con ETag evitan perder cambios concurrentes. Los comandos se deduplican por ID (últimos 200); un tick programado como máximo por minuto. No se reproduce un backlog tras interrupciones.
+- El motor comienza pausado. Activarlo persiste hasta pausar/cerrar; cerrar el navegador no lo pausa. Pausar entradas mantiene salidas por stop/objetivo; cerrar posiciones pausa entradas y registra los cierres ficticios.
+- Cruce SMA 5/20 sobre ticks sintéticos, stop 0.002, objetivo 0.004, spread fijo ilustrativo de 1 pip. Sin liquidez real, financiación ni comisiones. No son velas M15.
+- Cuenta ficticia USD y EUR/USD. Riesgo de nuevos trades 0.1–2%, exposición nominal abierta hasta 2%, máximo dos posiciones, bloqueo de entradas por pérdida diaria del equity del 4%, día America/New_York. Los gaps pueden superar el riesgo nominal; estos límites son hipótesis educativas.
+- Historial de últimos 1000 cierres exportable CSV. Eventos limitados a 40. No borrar desde el panel.
 
-## Ejecutar localmente
+## Seguridad y despliegue
 
-Python 3.10 o posterior, sin paquetes externos.
+Mantener el proyecto privado. La API exige context.user verificado por Netlify y producción publicada; no acepta identidad enviada por el cliente. Si el proyecto pasa a público o la plataforma no proporciona identidad, falla cerrado. POST exige origen del proyecto y JSON, sin CORS. Lecturas sin caché. No hay credenciales de OANDA en código ni navegador.
 
+Netlify importa main, publica dist y empaqueta netlify/functions con Node 22. npm ci instala @netlify/blobs con versión fija y lockfile; npm run check y npm test validan antes de publicar. No requiere variables nuevas ni plan de pago adicional; sujeto a créditos y límites de la cuenta existente.
+
+## Verificación
+
+    npm ci
+    npm test
+    npm run check
     python3 -m unittest discover -s tests -v
 
-Generar una clave aleatoria de al menos 32 caracteres y configurar PANEL_ACCESS_TOKEN como variable de entorno del servidor. No incorporarla al repositorio. Después:
+Las pruebas cubren límites, spread/salidas con pausa, pérdida diaria, ticks y comandos duplicados, persistencia concurrente, autenticación y origen. El motor Python/SQLite anterior se conserva como alternativa local y usa PANEL_ACCESS_TOKEN >=32 caracteres; este panel v0.3 usa la API Netlify, no el Python. bot/oanda_practice.py es un adaptador de consulta sin usar.
 
-    python3 -m bot.server
+## Próximas etapas
 
-Abrir http://127.0.0.1:8765. En Configuración introducir esa dirección y la clave del panel. Conectar, volver a Panel y activar el motor simulado. Los precios avanzan cada cinco segundos. Pausar entradas no detiene las salidas protectoras. Cerrar posiciones también pausa nuevas entradas.
-
-Sin servidor, la interfaz conserva el modo de ejemplos fijos solo en el navegador. Ese modo no aplica límites diarios. Al conectar, el estado del servidor gobierna los controles.
-
-## GitHub / Netlify / servidor
-
-1. Crear un repositorio independiente para el bot. Subir este directorio sin bases de datos ni claves. GitHub Actions ejecutará las pruebas.
-2. En Netlify importar el repositorio. Publicación: dist, sin comando de compilación.
-3. Ejecutar el motor en un servicio persistente. Con Docker montar un volumen permanente en /data. Configurar PANEL_ACCESS_TOKEN y PANEL_ORIGIN con el origen HTTPS exacto del panel Netlify, sin barra final. El servicio necesita HTTPS delante del puerto de la aplicación.
-4. Configurar la URL HTTPS del servidor en el panel y conectar con su clave. No exponer directamente el servidor HTTP de desarrollo a Internet: usar proxy HTTPS y límites de tráfico.
-
-Variables adicionales: PORT (8765), PANEL_HOST (127.0.0.1 por defecto; Docker usa 0.0.0.0), PAPER_DB_PATH (ruta SQLite persistente).
-
-El motor necesita una sola instancia para una base de datos. No está preparado para alta disponibilidad o múltiples procesos que operen la misma cuenta. No usar con dinero real.
-
-## Pendiente
-
-Crear el repositorio, conectar Netlify y desplegar el servidor. Definir y validar estrategia con históricos reales, costos, períodos fuera de muestra y pruebas de robustez. Por último conectar OANDA demo y desarrollar ejecución de órdenes, conciliación, prevención de duplicados y recuperación ante errores. Este paquete no habilita operar dinero real.
-
-Las pruebas comprueban dimensionamiento, exposición máxima, pausa/salidas, límite diario, generación de posiciones ficticias, autenticación y persistencia tras reinicio. La interfaz no fue verificada en navegador en esta sesión.
+Validar una estrategia definida con históricos reales, costos, períodos fuera de muestra y robustez. Después conectar OANDA practice y desarrollar ejecución, conciliación y recuperación. El motor actual no puede enviar órdenes a un bróker ni habilita dinero real. La arquitectura para ejecución real continua se decidirá durante esa etapa.
