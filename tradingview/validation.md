@@ -26,6 +26,8 @@ Observed in the TradingView strategy report on 2026-10-11 UTC. This is historica
 
 Values are transcribed from the displayed report, not recomputed from an exported trade ledger. A simulated short remained open on the final available bar, so the headline PnL should not be treated as an all-positions-closed result. Dollar and percentage drawdown values are reported as TradingView displays them; the percentage should not be calculated by dividing the dollar figure by initial capital.
 
+The follow-up [trade audit](audit.md) separately sums all 58 closed rows and records the open position and reconciliation limits.
+
 ## Assessment and next validation
 
 The unchanged baseline lost money in this sample and its profit factor was below 1. This does not support an earnings projection or deployment to real money. This first window is now a development sample, not an untouched out-of-sample test.
