@@ -15,7 +15,7 @@ const practiceReason={
 async function practiceApi(payload){
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),35000);
  try{const r=await fetch(payload?'/api/practice-command':'/api/practice-engine',{method:payload?'POST':'GET',credentials:'same-origin',cache:'no-store',headers:payload?{'Content-Type':'application/json'}:{},body:payload?JSON.stringify({...payload,id:crypto.randomUUID()}):undefined,signal:controller.signal});
-  if(!r.headers.get('content-type')?.includes('application/json'))throw Error('Comprueba tu sesión privada de Netlify.');const d=await r.json();if(!r.ok)throw Error(d.error||'Demo sin confirmar.');
+  if(r.status===401||r.status===403||!r.headers.get('content-type')?.includes('application/json'))throw Error('No hay acceso al informe privado. Inicia sesión con tu cuenta invitada de Netlify y vuelve a actualizar.');const d=await r.json();if(!r.ok)throw Error(d.error||'Demo sin confirmar.');
   if(d.mode!=='oanda-practice-engine'||d.environment!=='practice'||d.real_execution_enabled!==false)throw Error('Respuesta demo inesperada.');return d;
  }finally{clearTimeout(timer);}
 }
@@ -28,10 +28,22 @@ function practiceDraw(d){
  el('practice-trades').replaceChildren();for(const t of d.trades){row(el('practice-trades'),[t.entryTime,t.state==='OPEN'?'Abierta':'Cerrada',t.units,t.entry.toFixed(5),t.stop?.toFixed(5)??'—',t.target?.toFixed(5)??'—',t.exitTime??'—',value(t.realizedPL+t.financing-t.commission-t.guaranteedFee),value(t.unrealizedPL)]);}if(!d.trades.length)row(el('practice-trades'),[d.initialized?'Sin operaciones del bot registradas.':'Historial sin verificar.']);
  el('practice-start').disabled=!d.initialized||d.active||!!d.fault||d.kill||d.daily_locked||!!d.pending_status;
 }
-async function practiceRefresh(action){if(practiceBusy)return;practiceBusy=true;document.getElementById('practice-message').textContent='Consultando OANDA Demo…';
- try{practiceData=await practiceApi(action?{action}:undefined);practiceDraw(practiceData);document.getElementById('practice-message').textContent=action?'Estado demo guardado y confirmado.':'';}
- catch(e){document.getElementById('practice-message').textContent='Estado sin confirmar. '+e.message;document.getElementById('practice-start').disabled=true;}
- finally{practiceBusy=false;}
+function practiceUnconfirmed(){
+ practiceData=null;document.getElementById('practice-status').textContent='Estado actual del motor sin confirmar.';
+ document.getElementById('practice-decision').textContent='El informe no está disponible. Esto no confirma que el motor esté detenido.';
+ for(const id of ['practice-closed','practice-open','practice-equity','practice-count'])document.getElementById(id).textContent='Sin datos actuales';
+ document.getElementById('practice-summary').replaceChildren();document.getElementById('practice-trades').replaceChildren();
+ row(document.getElementById('practice-trades'),['Historial actual sin verificar.']);
+ document.getElementById('practice-start').disabled=true;document.getElementById('practice-export').disabled=true;
+}
+async function practiceRefresh(action){if(practiceBusy)return;practiceBusy=true;
+ const button=document.getElementById('practice-refresh'),message=document.getElementById('practice-message');
+ button.disabled=true;button.textContent='Actualizando informe…';button.setAttribute('aria-busy','true');message.textContent='Consultando el informe guardado de OANDA Demo…';
+ try{practiceData=await practiceApi(action?{action}:undefined);practiceDraw(practiceData);document.getElementById('practice-export').disabled=false;
+  const time=new Date().toLocaleTimeString('es-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  message.textContent=(action?'Estado demo guardado y confirmado':'Informe actualizado')+' · '+time+'.'+(practiceData.heartbeat_stale?' El último ciclo del motor está antiguo o sin confirmar; esta consulta no lo reinicia.':'');}
+ catch(e){practiceUnconfirmed();message.textContent='No se pudo actualizar. '+(e.name==='AbortError'?'La consulta superó 35 segundos. Vuelve a intentarlo.':e.name==='TypeError'?'No se pudo conectar con el servidor. Comprueba tu conexión y vuelve a intentarlo.':e.message);}
+ finally{practiceBusy=false;button.disabled=false;button.textContent='Actualizar informe demo';button.setAttribute('aria-busy','false');}
 }
 document.getElementById('practice-refresh').onclick=()=>practiceRefresh();
 document.getElementById('practice-check').onclick=()=>practiceRefresh('check');
